@@ -2,16 +2,16 @@ import os
 import time
 from Xlib import display
 import pyautogui
-from pynput import keyboard
+from pynput import keyboard, mouse
 import threading
 
 pyautogui.FAILSAFE = False
-ctrl_pressed = False
-shift_pressed = False
-esc_pressed = False
 
 def ft_lock():
+    keyboard.Controller().press(keyboard.Key.esc)
+    keyboard.Controller().release(keyboard.Key.esc)
     os.system("ft_lock")
+    print("Program exited properly.")
     os._exit(0)
 
 def mouse_position():
@@ -31,7 +31,8 @@ def countdown(total_minutes):
         print(timer, end="\r")
         time.sleep(1)
         total_seconds -= 1
-    pyautogui.click(exit_x, fixed_y, button='left')
+    print(f"\n{total_minutes} min countdown end...\nLocking screen...")
+    ft_lock()
 
 def delay_before_lock(minutes):
     countdown(minutes)
@@ -40,37 +41,35 @@ def lock_if_mouse_moves():
     while not exit_event.is_set():
         x, y = mouse_position()
         if x != initial_x or y != initial_y:
-            pyautogui.click(exit_x, fixed_y, button='left')
+            print(f"Mouse moved!\nx ===> {x}/{initial_x}\ny ===> {y}/{initial_y}...\nLocking screen...")
             ft_lock()
 
+pressed_keys = set()
+
 def on_key_press(key):
-    global ctrl_pressed, shift_pressed, esc_pressed
-
-    if key == keyboard.Key.ctrl:
-        ctrl_pressed = True
-    elif key == keyboard.Key.shift:
-        shift_pressed = True
-    elif key == keyboard.Key.esc:
-        esc_pressed = True
-    else:
-        pyautogui.click(exit_x, fixed_y, button='left')
-
-    if ctrl_pressed and shift_pressed and esc_pressed:
+    pressed_keys.add(key)
+    time.sleep(0.1)
+    if keyboard.Key.home in pressed_keys and keyboard.Key.end in pressed_keys:
+        print(f"Keys pressed: home and end...\nProgram exited properly...")
         os._exit(0)
+    elif key not in {keyboard.Key.home, keyboard.Key.end, keyboard.Key.esc}:
+        print(f"Key pressed: {key}...\nLocking screen...")
+        ft_lock()
 
 def on_key_release(key):
-    global ctrl_pressed, shift_pressed, esc_pressed
+    pressed_keys.discard(key)
 
-    if key == keyboard.Key.ctrl:
-        ctrl_pressed = False
-    elif key == keyboard.Key.shift:
-        shift_pressed = False
-    elif key == keyboard.Key.esc:
-        esc_pressed = False
+def on_mouse_click(x, y, button, pressed):
+    if pressed:
+        print(f"Mouse button {button} pressed...\nLocking screen...")
+        ft_lock()
+
+def on_mouse_scroll(x, y, dx, dy):
+    print(f"Mouse wheel scrolled...\nLocking screen...")
+    ft_lock()
 
 if __name__ == "__main__":
     start_x = 1919
-    exit_x = 1111
     fixed_y = 0
 
     delay_minutes = int(input("Enter the delay in minutes for delay_before_lock: "))
@@ -86,8 +85,10 @@ if __name__ == "__main__":
     monitor_mouse_thread = threading.Thread(target=lock_if_mouse_moves)
     monitor_mouse_thread.start()
 
-    with keyboard.Listener(on_press=on_key_press, on_release=on_key_release) as listener:
-        listener.join()
+    with keyboard.Listener(on_press=on_key_press, on_release=on_key_release) as key_listener, \
+         mouse.Listener(on_click=on_mouse_click, on_scroll=on_mouse_scroll) as mouse_listener:
+        key_listener.join()
+        mouse_listener.join()
 
     exit_event.set()
     move_pointer_thread.join()
