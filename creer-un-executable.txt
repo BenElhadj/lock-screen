@@ -1,0 +1,61 @@
+Pour créer un exécutable de ce programme sur Ubuntu sans privilèges administrateur,
+vous pouvez utiliser PyInstaller. Cependant, vous devrez d'abord
+installer PyInstaller et certaines dépendances du programme
+dans un environnement virtuel Python pour éviter les problèmes de permissions.
+
+Suivez ces étapes pour créer un exécutable :
+
+-1- Installez virtualenv si vous ne l'avez pas déjà fait :
+        pip3 install --user virtualenv
+-2- Créez un nouvel environnement virtuel Python :
+        python3 -m virtualenv myenv
+-3- Activez l'environnement virtuel :
+        source myenv/bin/activate
+-4- Installez les dépendances du programme :
+        pip install Xlib pyautogui pynput
+-5- Installez PyInstaller dans l'environnement virtuel :
+        pip install pyinstaller
+-6- Enregistrez votre programme Python dans un fichier, par exemple lock_screen.py.
+-7- Utilisez PyInstaller pour créer un exécutable à partir de votre fichier Python :
+        pyinstaller --onefile lock_screen.py
+-8- L'exécutable sera créé dans le dossier dist. Vous pouvez le lancer en exécutant :
+        ./dist/lock_screen
+-9- N'oubliez pas de désactiver l'environnement virtuel lorsque vous avez terminé en exécutant :
+        deactivate
+  
+  Pour créer un lanceur avec double-clic sous Linux, vous pouvez créer 
+un fichier .desktop, Voici les étapes pour le faire:
+
+-1- Créez un fichier texte avec le contenu suivant:
+
+    [Desktop Entry]
+    Version=1.0
+    Type=Application
+    Name=Lock-Screen
+    Comment=program to lock your session after a predefined time, otherwise, if it detects a mouse movement or pressing a key on the keyboard, it instantly locks the session.
+    Exec=/path/to/your/lock-screen-executable
+    Icon=/path/to/your/ordinateur-verrouille.png
+    Terminal=true
+
+N'oubliez pas de remplacer /path/to/your/lock-screen-executable
+par le chemin d'accès réel à votre fichier exécutable
+et /path/to/your/ordinateur-verrouille.png par le chemin d'accès 
+à votre icône personnalisée.
+
+-2- Enregistrez ce fichier avec l'extension .desktop 
+(par exemple, lock-screen.desktop).
+
+-3- Accordez au fichier .desktop les autorisations d'exécution 
+en utilisant la commande suivante:
+        chmod +x lock-screen.desktop
+
+-4- Vous pouvez maintenant double-cliquer sur le fichier .desktop
+pour lancer votre application avec l'icône personnalisée.
+Si vous voulez que le lanceur soit accessible depuis le menu des applications,
+copiez-le dans le dossier ~/.local/share/applications:
+        cp lock-screen.desktop ~/.local/share/applications/
+
+
+Après avoir suivi ces étapes, vous devriez être en mesure de lancer
+votre application en double-cliquant sur le fichier .desktop.
+L'icône personnalisée devrait également être visible.
