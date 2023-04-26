@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Lock-Screen
+Comment=program to lock your session after a predefined time, otherwise, if it detects a mouse movement or pressing a key on the keyboard, it instantly locks the session.
+Exec=/path/to/your/lock-screen-executable
+Icon=/path/to/your/ordinateur-verrouille.png
+Terminal=true
