@@ -4,14 +4,36 @@ from Xlib import display
 import pyautogui
 from pynput import keyboard, mouse
 import threading
+import logging
 
 pyautogui.FAILSAFE = False
+
+default_log_path = "history_lock-screen"
+log_filename = f"traces-{time.strftime('%Y-%m-%d_%H-%M-%S')}.txt"
+
+user_log_path = input("Enter the path where you want to save the log file\n(leave empty for default path ~/history_lock-screen): ").strip()
+# logging.info("Enter the path where you want to save the log file\n(leave empty for default path ~/history_lock-screen): ")
+if not user_log_path:
+    user_log_path = default_log_path
+
+if not os.path.exists(user_log_path):
+    os.makedirs(user_log_path)
+
+full_log_path = os.path.join(user_log_path, log_filename)
+logging.basicConfig(filename=full_log_path, level=logging.INFO, format='%(asctime)s - %(message)s')
+
+def log_message(message):
+    print(message)
+    logging.info(message)
+
+log_message(f"You can find your history in {full_log_path} .")
 
 def ft_lock():
     keyboard.Controller().press(keyboard.Key.esc)
     keyboard.Controller().release(keyboard.Key.esc)
     os.system("ft_lock")
-    print("Program exited properly.")
+    log_message("Program exited properly.")
+    
     os._exit(0)
 
 def mouse_position():
@@ -31,7 +53,8 @@ def countdown(total_minutes):
         print(timer, end="\r")
         time.sleep(1)
         total_seconds -= 1
-    print(f"\n{total_minutes} min countdown end...\nLocking screen...")
+    log_message(f"\n{total_minutes} min countdown end...\nLocking screen...")
+    
     ft_lock()
 
 def delay_before_lock(minutes):
@@ -41,7 +64,8 @@ def lock_if_mouse_moves():
     while not exit_event.is_set():
         x, y = mouse_position()
         if x != initial_x or y != initial_y:
-            print(f"Mouse moved!\nx ===> {x}/{initial_x}\ny ===> {y}/{initial_y}...\nLocking screen...")
+            log_message(f"Mouse moved!\nx ===> {x}/{initial_x}\ny ===> {y}/{initial_y}...\nLocking screen...")
+            
             ft_lock()
 
 pressed_keys = set()
@@ -50,10 +74,12 @@ def on_key_press(key):
     pressed_keys.add(key)
     time.sleep(0.1)
     if keyboard.Key.home in pressed_keys and keyboard.Key.end in pressed_keys:
-        print(f"Keys pressed: home and end...\nProgram exited properly...")
+        log_message(f"Keys pressed: home and end...\nProgram exited properly...")
+        
         os._exit(0)
     elif key not in {keyboard.Key.home, keyboard.Key.end, keyboard.Key.esc}:
-        print(f"Key pressed: {key}...\nLocking screen...")
+        log_message(f"Key pressed: {key}...\nLocking screen...")
+        
         ft_lock()
 
 def on_key_release(key):
@@ -61,11 +87,13 @@ def on_key_release(key):
 
 def on_mouse_click(x, y, button, pressed):
     if pressed:
-        print(f"Mouse button {button} pressed...\nLocking screen...")
+        log_message(f"Mouse button {button} pressed...\nLocking screen...")
+        
         ft_lock()
 
 def on_mouse_scroll(x, y, dx, dy):
-    print(f"Mouse wheel scrolled...\nLocking screen...")
+    log_message(f"Mouse wheel scrolled...\nLocking screen...")
+    
     ft_lock()
 
 if __name__ == "__main__":
@@ -73,6 +101,8 @@ if __name__ == "__main__":
     fixed_y = 0
 
     delay_minutes = int(input("Enter the delay in minutes for delay_before_lock: "))
+    # logging.info("Enter the delay in minutes for delay_before_lock: ")
+    log_message(f"Delay entered: {delay_minutes} minutes")
     pyautogui.click(start_x, fixed_y, button='left')
 
     exit_event = threading.Event()
@@ -93,4 +123,4 @@ if __name__ == "__main__":
     exit_event.set()
     move_pointer_thread.join()
     monitor_mouse_thread.join()
-    print("Program exited properly.")
+    log_message("Program exited properly.")
